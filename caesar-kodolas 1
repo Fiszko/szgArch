@@ -1,0 +1,82 @@
+#!/bin/bash
+
+# alapertelmezett eltolas
+# az 'eltolas' valtozot 3-ra allitjuk. ez a valtozo adja meg, hogy mennyivel toljuk el az ABC-t
+#
+eltolas=3
+# alapertelmezett muvelet
+# a 'muvelet' valtozot K-ra allitjuk
+muvelet='K'
+# a tomb, amiben az ABC van
+declare -a abc=(A B C D E F G H I J K L M N O P Q R S T U V W X Y Z)
+
+# segitseg es hibakezeles. hibaval lepunk ki (1-es kod)
+# ez egy fuggveny, amit tobbszor is hasznalni fogunk a programban
+# $0: ez a program neve, jelen esetben 'caesar-kodolas'
+# exit 1: hibaval lepunk ki
+function help {
+  echo "$0 [eltolas] [muvelet] szoveg"
+  echo "eltolas: az eltolas merteke: 1-25"
+  echo "muvelet: K (kodolas) vagy D (dekodolas)"
+  echo "szoveg: a kodolando szoveg"
+  exit 1
+}
+
+# a muvelet csak K es D lehet. ha nem az, akkor kiirjuk a helpet es kilepunk
+# ha a muvelet nem K es a muvelet nem D, akkor hiba van
+function muvelet_ell {
+  if [[ $muvelet != "K" && $muvelet != "D" ]]; then
+    help
+  fi
+}
+
+# ha az elso argumentum -h, akkor kiirjuk a helpet es kilepunk
+if [[ $1 == "-h" ]]; then
+  help
+fi
+
+# a parameterek szama 1 es 3 kozott legyen, ha nem, akkor help es kilepunk
+# $# jelenti az argumentumok szamat
+# -eq: egyenlo
+# -gt: nagyobb, mint
+if [[ $# -eq 0 || $# -gt 3 ]]; then
+  help
+# csak 1 parameter eseten: a szoveg a parameter
+elif [[ $# -eq 1 ]]; then
+  szoveg=$1
+# csak 2 parameter eseten: a muvelet es a szoveg a parameterek, a muveletet leellenorizzuk
+elif [[ $# -eq 2 ]]; then
+  muvelet=$1
+  muvelet_ell
+  szoveg=$2
+# 3 parameter eseten: eltolas, muvelet (ellenorzes) es szoveg
+elif [[ $# -eq 3 ]]; then
+  eltolas=$1
+  muvelet=$2
+  muvelet_ell
+  szoveg=$3
+fi
+
+# az eltolas, a muvelet es a szoveg valtozok tartalmazzak a megfelelo ertekeket
+
+# az eltolas 1 es 25 kozott kell hogy legyen, ha nem, akkor help es kilepunk
+# -lt: kisebb, mint
+if [[ $eltolas -lt 1 || $eltolas -gt 25 ]]; then
+  help
+fi
+
+# a tr parancs felepitesehez hasznalt segedvaltozo
+# a segedvaltozo az eltolastol eggyel kisebb
+y=$((eltolas - 1))
+
+# kodolas muvelet, tr parancs felepitese
+if [[ $muvelet == "K" ]]; then
+  csere="tr '[A-Z]' '[${abc[eltolas]}-ZA-${abc[y]}]'"
+# dekodolas muvelet, tr parancs felepitese (a kodolas tr parancs megforditasa)
+else
+  csere="tr '[${abc[eltolas]}-ZA-${abc[y]}]' '[A-Z]'"
+fi
+
+# karakterek csereje a felepitett 'tr' paranccsal
+# a szoveget atpipe-oljuk a 'tr' parancsnak, ami elvegzi a helyettesitest
+echo $szoveg | $csere
